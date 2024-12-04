@@ -1,3 +1,4 @@
+#pyinstaller --onefile -w --upx-dir "C:\Users\raymo\Desktop\small-random-projects\upx-4.2.4-win64" "i feel so sigma script.py"
 import os
 from tkinter import Tk, Label, Button, filedialog, StringVar, messagebox, Canvas, Frame, Scrollbar
 from tkinter.ttk import Progressbar
@@ -118,27 +119,34 @@ class ImageToGifApp:
 
             # Define Impact font path
             font_path = "C:/Windows/Fonts/impact.ttf"
-            font_size = 50
+            font_size = 10  # Start with a small font size
             font = ImageFont.truetype(font_path, font_size)
 
-            # Calculate dynamic font size to ensure a 10% buffer on both sides
-            img_width = img.width
+            # Calculate dynamic font size to ensure text fits with a buffer
+            img_width, img_height = img.size
             buffer = img_width * 0.1
-            while draw.textbbox((0, 0), text, font=font)[2] < img_width - (2 * buffer):
+            while True:
+                text_bbox = draw.textbbox((0, 0), text, font=font)
+                text_width = text_bbox[2] - text_bbox[0]
+                text_height = text_bbox[3] - text_bbox[1]
+                if text_width > img_width - 2 * buffer or text_height > img_height * 0.2:
+                    font_size -= 1
+                    font = ImageFont.truetype(font_path, font_size)
+                    break
                 font_size += 1
                 font = ImageFont.truetype(font_path, font_size)
 
-            font_size -= 1
-            font = ImageFont.truetype(font_path, font_size)
+            # Dynamically calculate outline width based on font size
+            outline_width = min(max(font_size // 10, 1), 5)
 
             # Calculate text position (centered and near the top)
             text_bbox = draw.textbbox((0, 0), text, font=font)
-            text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1]
+            text_width = text_bbox[2] - text_bbox[0]
+            text_height = text_bbox[3] - text_bbox[1]
             position = ((img_width - text_width) // 2, text_height // 2)
 
             # Add shadow, outline, and main text
             shadow_offset = 2
-            outline_width = 5
             shadow_color = "black"
             outline_color = "black"
             text_color = "white"
@@ -173,6 +181,8 @@ class ImageToGifApp:
             img.save(gif_path, format="GIF")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to process {input_path}: {str(e)}")
+
+
 
 
 # Run the application
